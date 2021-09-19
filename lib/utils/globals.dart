@@ -1,0 +1,2 @@
+var userLoggedIn;
+var usertype;

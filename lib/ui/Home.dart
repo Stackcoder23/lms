@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lms/ui/Homepage.dart';
+import 'package:lms/ui/Login.dart';
 import 'package:lms/ui/notodo_screen.dart';
 import 'package:lms/widget/change_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -64,6 +66,15 @@ class _HomeState extends State<Home> {
               ),
             ),
             ListTile(
+              onTap: () async {
+                final SharedPreferences loggedIn = await SharedPreferences.getInstance();
+                loggedIn.remove("username");
+                loggedIn.remove("usertype");
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => Login())
+                );
+              },
               title: Text(
                 "Logout",
                 style: TextStyle(
