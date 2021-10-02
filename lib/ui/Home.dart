@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lms/ui/Homepage.dart';
 import 'package:lms/ui/Login.dart';
+import 'package:lms/ui/People.dart';
 import 'package:lms/ui/notodo_screen.dart';
+import 'package:lms/utils/globals.dart';
 import 'package:lms/widget/change_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,17 +13,51 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
+  String? sname;
+
+  void getName() async {
+    if (usertype == role.student.toString()) {
+      DocumentReference documentReference = FirebaseFirestore.instance
+          .collection("students")
+          .doc(userLoggedIn.toString());
+      documentReference.get().then((value) {
+        setState(() {
+          sname = value.get("name");
+        });
+      }).catchError((value) {
+        setState(() {
+          sname = "error";
+        });
+      });
+    } else if (usertype == role.teacher.toString()) {
+      DocumentReference documentReference = FirebaseFirestore.instance
+          .collection("teachers")
+          .doc(userLoggedIn.toString());
+      documentReference.get().then((value) {
+        setState(() {
+          sname = value.get("name");
+        });
+      }).catchError((value) {
+        setState(() {
+          sname = "error";
+        });
+      });
+    }
+  }
+
+  _HomeState(){
+    getName();
+  }
 
   static const List<Widget> _widgetOptions = <Widget>[
     Homepage(),
     NoToDoScreen(),
-    Text("Hello 3")
+    People()
   ];
 
-  void _onItemTapped(int index){
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -39,14 +76,18 @@ class _HomeState extends State<Home> {
           children: [
             DrawerHeader(
               padding: EdgeInsets.all(30),
-                decoration:
-                    BoxDecoration(color: Theme.of(context).primaryColor),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text("Hello")
-                  ],
-                ),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    sname.toString(),
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                    ),
+                  )
+                ],
+              ),
             ),
             ListTile(
               title: Text(
@@ -67,13 +108,12 @@ class _HomeState extends State<Home> {
             ),
             ListTile(
               onTap: () async {
-                final SharedPreferences loggedIn = await SharedPreferences.getInstance();
+                final SharedPreferences loggedIn =
+                    await SharedPreferences.getInstance();
                 loggedIn.remove("username");
                 loggedIn.remove("usertype");
                 Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => Login())
-                );
+                    context, MaterialPageRoute(builder: (context) => Login()));
               },
               title: Text(
                 "Logout",
@@ -97,14 +137,8 @@ class _HomeState extends State<Home> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedIconTheme: IconThemeData(
-          opacity: 20,
-          size: 25
-        ),
-        unselectedIconTheme: IconThemeData(
-          opacity: 0.5,
-          size: 15
-        ),
+        selectedIconTheme: IconThemeData(opacity: 20, size: 25),
+        unselectedIconTheme: IconThemeData(opacity: 0.5, size: 15),
         selectedItemColor: Theme.of(context).accentColor,
         backgroundColor: Theme.of(context).primaryColor,
         items: [

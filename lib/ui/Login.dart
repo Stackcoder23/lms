@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lms/main.dart';
+import 'package:lms/ui/Admin_pass.dart';
 import 'package:lms/ui/Register.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lms/utils/globals.dart';
@@ -23,7 +24,7 @@ class _LoginState extends State<Login> {
 
   bool _isHidden = true;
   late String username;
-  late String pass;
+  String? pass;
   role? _st = role.student;
 
   getUserName(username) {
@@ -38,6 +39,10 @@ class _LoginState extends State<Login> {
     final SharedPreferences loggedIn = await SharedPreferences.getInstance();
     loggedIn.setString('username', username);
     loggedIn.setString('usertype', _st.toString());
+    setState(() {
+      userLoggedIn = loggedIn.getString('username');
+      usertype = loggedIn.getString('usertype');
+    });
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => Home()));
   }
@@ -46,6 +51,7 @@ class _LoginState extends State<Login> {
     final SharedPreferences loggedIn = await SharedPreferences.getInstance();
     setState(() {
       userLoggedIn = loggedIn.getString('username');
+      usertype = loggedIn.getString('usertype');
     });
     // userLoggedIn != null ? Navigator.pushReplacement(
     //     context,
@@ -54,20 +60,24 @@ class _LoginState extends State<Login> {
   }
 
   void loginUser() {
-    DocumentReference? documentReference;
-    if (_st == role.student) {
-      documentReference =
-          FirebaseFirestore.instance.collection("students").doc(username);
-    } else if (_st == role.teacher) {
-      documentReference =
-          FirebaseFirestore.instance.collection("teachers").doc(username);
+    if (username.isNotEmpty && pass.toString() != "") {
+      DocumentReference? documentReference;
+      if (_st == role.student) {
+        documentReference =
+            FirebaseFirestore.instance.collection("students").doc(username);
+      } else if (_st == role.teacher) {
+        documentReference =
+            FirebaseFirestore.instance.collection("teachers").doc(username);
+      }
+      documentReference!
+          .get()
+          .then((value) => value.get("password") == pass
+              ? saveUser()
+              : showAlertDialog(
+                  context, "Incorrect password")) //print("Incorrect password"))
+          .catchError((value) => showAlertDialog(
+              context, "User does not exist")); //print("User does not exist"));
     }
-    documentReference!
-        .get()
-        .then((value) => value.get("password") == pass
-            ? saveUser()
-            : print("Incorrect password"))
-        .catchError((value) => print("User does not exist"));
   }
 
   @override
@@ -141,7 +151,12 @@ class _LoginState extends State<Login> {
                                     Expanded(
                                         child: ListTile(
                                       horizontalTitleGap: -8,
-                                      title: Text("Student"),
+                                      title: Text(
+                                        "Student",
+                                        style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                        ),
+                                      ),
                                       leading: Radio<role>(
                                         value: role.student,
                                         groupValue: _st,
@@ -155,7 +170,12 @@ class _LoginState extends State<Login> {
                                     Expanded(
                                         child: ListTile(
                                       horizontalTitleGap: -8,
-                                      title: Text("Teacher"),
+                                      title: Text(
+                                        "Teacher",
+                                        style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                        ),
+                                      ),
                                       leading: Radio<role>(
                                         value: role.teacher,
                                         groupValue: _st,
@@ -275,26 +295,26 @@ class _LoginState extends State<Login> {
                                 SizedBox(
                                   height: 50,
                                 ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: TextButton(
-                                      style: ButtonStyle(),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => Register()),
-                                        );
-                                      },
-                                      child: Text(
-                                        "Admin Login",
-                                        style: TextStyle(
-                                            decoration:
-                                            TextDecoration.underline,
-                                            color:
-                                            Theme.of(context).accentColor),
-                                      )),
-                                ),
+                                // Align(
+                                //   alignment: Alignment.center,
+                                //   child: TextButton(
+                                //       style: ButtonStyle(),
+                                //       onPressed: () {
+                                //         Navigator.push(
+                                //           context,
+                                //           MaterialPageRoute(
+                                //               builder: (context) => Admin()),
+                                //         );
+                                //       },
+                                //       child: Text(
+                                //         "Admin Login",
+                                //         style: TextStyle(
+                                //             decoration:
+                                //             TextDecoration.underline,
+                                //             color:
+                                //             Theme.of(context).accentColor),
+                                //       )),
+                                // ),
                               ],
                             ),
                           )),
@@ -310,5 +330,32 @@ class _LoginState extends State<Login> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  showAlertDialog(BuildContext context, String message) {
+    // Create button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // Create AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert"),
+      content: Text(message),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

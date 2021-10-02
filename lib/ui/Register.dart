@@ -1,16 +1,85 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lms/ui/Login.dart';
+import 'dart:core';
+import 'package:email_validator/email_validator.dart';
 
 class Register extends StatefulWidget {
   @override
   _RegisterState createState() => _RegisterState();
 }
 
-enum role { student, teacher}
+enum role { student, teacher }
 
 class _RegisterState extends State<Register> {
   bool _isHidden = true;
   String? school, course;
   role? _st = role.student;
+  TextEditingController namecontroller = new TextEditingController();
+  TextEditingController emailcontroller = new TextEditingController();
+  TextEditingController passcontroller = new TextEditingController();
+  TextEditingController repasscontroller = new TextEditingController();
+
+  registerUser() {
+    bool isValid = EmailValidator.validate(emailcontroller.text);
+    if (namecontroller.text != "" &&
+        emailcontroller.text != "" &&
+        passcontroller.text != "" &&
+        repasscontroller.text != "" &&
+        school != null) {
+      if (isValid) {
+        if (passcontroller.text == repasscontroller.text) {
+          if (_st == role.student) {
+            DocumentReference documentReference = FirebaseFirestore.instance
+                .collection("students")
+                .doc(emailcontroller.text);
+
+            Map<String, dynamic> map = <String, dynamic>{
+              "name": namecontroller.text,
+              "password": passcontroller.text,
+              "school": school,
+              "class": course
+            };
+
+            documentReference.set(map).whenComplete(() => {
+                  print("$emailcontroller inserted"),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Login()),
+                  )
+                });
+          } else if (_st == role.teacher) {
+            DocumentReference documentReference = FirebaseFirestore.instance
+                .collection("teachers")
+                .doc(emailcontroller.text);
+
+            Map<String, dynamic> map = <String, dynamic>{
+              "name": namecontroller.text,
+              "password": passcontroller.text,
+              "school": school,
+            };
+
+            documentReference.set(map).whenComplete(() => {
+                  print("$emailcontroller inserted"),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Login()),
+                  )
+                });
+          }
+        } else {
+          showAlertDialog(context, "passwords doesn't match");
+          print("passwords doesn't match");
+        }
+      } else {
+        print("Email not Valid");
+        showAlertDialog(context, "Please enter a valid email");
+      }
+    } else {
+      showAlertDialog(context, "Fields cannot be empty");
+      print("Cant be empty");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +128,8 @@ class _RegisterState extends State<Register> {
                             topRight: Radius.circular(40),
                           )),
                       child: Padding(
-                        padding: EdgeInsets.only(top: 15, left: 24, right: 24, bottom: 24),
+                        padding: EdgeInsets.only(
+                            top: 15, left: 24, right: 24, bottom: 24),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,39 +137,48 @@ class _RegisterState extends State<Register> {
                             Row(
                               children: [
                                 Expanded(
-                                    child : ListTile(
-                                      horizontalTitleGap: 2,
-                                      title: Text("Student"),
-                                      leading: Radio<role>(
-                                        value: role.student,
-                                        groupValue: _st,
-                                        onChanged: (role? value) {
-                                          setState(() {
-                                            _st = value;
-                                          });
-                                        },
-                                      ),
-                                    )
-                                ),
+                                    child: ListTile(
+                                  horizontalTitleGap: 2,
+                                  title: Text(
+                                    "Student",
+                                    style: TextStyle(
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                  ),
+                                  leading: Radio<role>(
+                                    value: role.student,
+                                    groupValue: _st,
+                                    onChanged: (role? value) {
+                                      setState(() {
+                                        _st = value;
+                                      });
+                                    },
+                                  ),
+                                )),
                                 Expanded(
-                                    child : ListTile(
-                                      horizontalTitleGap: 2,
-                                      title: Text("Teacher"),
-                                      leading: Radio<role>(
-                                        value: role.teacher,
-                                        groupValue: _st,
-                                        onChanged: (role? value) {
-                                          setState(() {
-                                            _st = value;
-                                          });
-                                        },
-                                      ),
-                                    )
-                                )
+                                    child: ListTile(
+                                  horizontalTitleGap: 2,
+                                  title: Text(
+                                    "Teacher",
+                                    style: TextStyle(
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                  ),
+                                  leading: Radio<role>(
+                                    value: role.teacher,
+                                    groupValue: _st,
+                                    onChanged: (role? value) {
+                                      setState(() {
+                                        _st = value;
+                                      });
+                                    },
+                                  ),
+                                ))
                               ],
                             ),
                             SizedBox(height: 10),
                             TextField(
+                              controller: namecontroller,
                               style: TextStyle(
                                 color: Theme.of(context).accentColor,
                               ),
@@ -120,6 +199,7 @@ class _RegisterState extends State<Register> {
                               height: 20,
                             ),
                             TextField(
+                              controller: emailcontroller,
                               style: TextStyle(
                                 color: Theme.of(context).accentColor,
                               ),
@@ -141,6 +221,7 @@ class _RegisterState extends State<Register> {
                               height: 20,
                             ),
                             TextField(
+                              controller: passcontroller,
                               style: TextStyle(
                                 color: Theme.of(context).accentColor,
                               ),
@@ -173,6 +254,7 @@ class _RegisterState extends State<Register> {
                               height: 20,
                             ),
                             TextField(
+                              controller: repasscontroller,
                               style: TextStyle(
                                 color: Theme.of(context).accentColor,
                               ),
@@ -219,10 +301,10 @@ class _RegisterState extends State<Register> {
                                 ),
                                 items: <String>[
                                   'School of Computer Science',
-                                  'School of Management',
-                                  'School of Science',
-                                  'School of Arts',
-                                  'School of Design'
+                                  // 'School of Management',
+                                  // 'School of Science',
+                                  // 'School of Arts',
+                                  // 'School of Design'
                                 ].map<DropdownMenuItem<String>>((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -252,52 +334,61 @@ class _RegisterState extends State<Register> {
                             SizedBox(
                               height: 20,
                             ),
-                            Container(
-                              padding: EdgeInsets.only(
-                                  left: 15, right: 15, top: 8, bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.black12,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                value: course,
-                                style: TextStyle(
-                                  color: Theme.of(context).accentColor,
+                            if (_st == role.student)
+                              Container(
+                                padding: EdgeInsets.only(
+                                    left: 15, right: 15, top: 8, bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black12,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                items: <String>[
-                                  'Msc',
-                                  'Msc BDA',
-                                  'Msc DS'
-                                  'MCA',
-                                  'Bsc',
-                                  'BCA'
-                                ].map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Theme.of(context).accentColor,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                                hint: Text(
-                                  "Choose your Program",
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: course,
                                   style: TextStyle(
-                                    color: Theme.of(context).hintColor,
-                                    fontSize: 16,
+                                    color: Theme.of(context).accentColor,
                                   ),
+                                  items: <String>[
+                                    'FYMCA',
+                                    'SYMCA',
+                                    'TYMCA',
+                                    'FYMsc BDA',
+                                    'SYMsc BDA',
+                                    'FYMsc',
+                                    'SYMsc',
+                                    'FYBsc',
+                                    'SYBsc',
+                                    'TYBsc',
+                                    'FYBCA',
+                                    'SYBCA',
+                                    'TYBCA'
+                                  ].map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Theme.of(context).accentColor,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  hint: Text(
+                                    "Choose your course",
+                                    style: TextStyle(
+                                      color: Theme.of(context).hintColor,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      course = value.toString();
+                                    });
+                                  },
                                 ),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    school = value.toString();
-                                  });
-                                },
                               ),
-                            ),
                             SizedBox(
                               height: 40,
                             ),
@@ -310,7 +401,9 @@ class _RegisterState extends State<Register> {
                                         MaterialStateProperty.all<Color>(
                                             Theme.of(context).primaryColor),
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    registerUser();
+                                  },
                                   child: Text(
                                     "Register",
                                     style: TextStyle(fontSize: 20),
@@ -332,5 +425,32 @@ class _RegisterState extends State<Register> {
     setState(() {
       _isHidden = !_isHidden;
     });
+  }
+
+  showAlertDialog(BuildContext context, String message) {
+    // Create button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // Create AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert"),
+      content: Text(message),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }
