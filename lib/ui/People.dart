@@ -88,23 +88,26 @@ class _PeopleState extends State<People> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      body: ListView.builder(
-          itemCount: datas.length,
-          itemBuilder: (context, index){
-            try{
-              return ListTile(
-                trailing: Text("Student", style: TextStyle(color: Theme.of(context).accentColor),),
-                title: Text('${datas[index]["name"]}', style: TextStyle(color: Theme.of(context).accentColor)),
-                subtitle: Text('${datas[index]["class"]}', style: TextStyle(color: Theme.of(context).accentColor)),
-              );
-            }
-            catch(Exception){
-              return ListTile(
-                trailing: Text("Teacher", style: TextStyle(color: Theme.of(context).accentColor)),
-                title: Text('${datas[index]["name"]}', style: TextStyle(color: Theme.of(context).accentColor)),
-              );
-            }
-          })
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListView.builder(
+            itemCount: datas.length,
+            itemBuilder: (context, index){
+              try{
+                return ListTile(
+                  trailing: Text("Student", style: TextStyle(color: Theme.of(context).accentColor),),
+                  title: Text('${datas[index]["name"]}', style: TextStyle(color: Theme.of(context).accentColor)),
+                  subtitle: Text('${datas[index]["class"]}', style: TextStyle(color: Theme.of(context).accentColor)),
+                );
+              }
+              catch(Exception){
+                return ListTile(
+                  trailing: Text("Teacher", style: TextStyle(color: Theme.of(context).accentColor)),
+                  title: Text('${datas[index]["name"]}', style: TextStyle(color: Theme.of(context).accentColor)),
+                );
+              }
+            }),
+      )
     );
   }
 }
