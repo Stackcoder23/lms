@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lms/ui/CourseDetails.dart';
@@ -78,10 +80,28 @@ class _HomepageState extends State<Homepage> {
                           color: Theme.of(context).primaryColor,
                           border: Border.all(
                               color: Theme.of(context).accentColor, width: 2)),
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        document.id,
-                        style: TextStyle(color: Theme.of(context).accentColor),
+                      // padding: EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                              child: Image(
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              image: AssetImage('assets/course.jpg'),
+                          )),
+                          Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Text(
+                                document.id,
+                                style:
+                                    TextStyle(color: Theme.of(context).accentColor, fontSize: 17),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -140,10 +160,28 @@ class _HomepageState extends State<Homepage> {
                         color: Theme.of(context).primaryColor,
                         border: Border.all(
                             color: Theme.of(context).accentColor, width: 2)),
-                    padding: EdgeInsets.all(10),
-                    child: Text(
-                      document.id,
-                      style: TextStyle(color: Theme.of(context).accentColor),
+                    // padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: Image(
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              image: AssetImage('assets/course.jpg'),
+                            )),
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              document.id,
+                              style:
+                              TextStyle(color: Theme.of(context).accentColor, fontSize: 17),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -273,13 +311,11 @@ class _HomepageState extends State<Homepage> {
     course = null;
   }
 
-  void openCourse(String id){
+  void openCourse(String id) {
     print(id);
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => CourseDetails(id: id)),
+      MaterialPageRoute(builder: (context) => CourseDetails(id: id)),
     );
   }
-
 }

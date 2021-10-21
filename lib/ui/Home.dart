@@ -47,7 +47,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  _HomeState(){
+  _HomeState() {
     getName();
   }
 
@@ -80,10 +80,22 @@ class _HomeState extends State<Home> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    sname.toString(),
-                    style: TextStyle(
-                      color: Theme.of(context).accentColor,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: Image(
+                      image: AssetImage('assets/user.png'),
+                      width: 60,
+
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Text(
+                      sname.toString(),
+                      style: TextStyle(
+                        fontSize: 17,
+                        color: Theme.of(context).accentColor,
+                      ),
                     ),
                   )
                 ],
